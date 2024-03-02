@@ -43,6 +43,11 @@ public class ShovelMixin {
                 world.playSound(player, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
                 cir.setReturnValue(ActionResult.SUCCESS);
+                if (player != null) {
+                    context.getStack().damage(1, player, (p) -> {
+                        p.sendToolBreakStatus(context.getHand());
+                    });
+                }
             }
         }
 
