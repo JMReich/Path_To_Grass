@@ -37,7 +37,7 @@ public class ShovelMixin {
             BlockState blockState = world.getBlockState(pos);
             Block block = blockState.getBlock();
 
-            player.sendMessage(Text.literal("The block is " + block));
+
 
             if (block == Blocks.DIRT_PATH) {
                 world.playSound(player, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
