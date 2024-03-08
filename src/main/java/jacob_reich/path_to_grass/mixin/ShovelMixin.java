@@ -39,8 +39,10 @@ public class ShovelMixin {
 
 
 
+
             if (block == Blocks.DIRT_PATH) {
-                world.playSound(player, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+
+                world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
                 world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
                 cir.setReturnValue(ActionResult.SUCCESS);
                 if (player != null) {
