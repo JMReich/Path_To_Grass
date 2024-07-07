@@ -3,13 +3,13 @@
 	"id": "path_to_grass",
 	"version": "${version}",
 	"name": "Path To Grass",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "This mod enables the player to turn paths to grass by right clicking them with a shovel. Complete with sound and damage to the shovel.",
 	"authors": [
-		"Me!"
+		"Pixel.Perfectionist / Jacob Reich"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/JMReich/Path_To_Grass",
+		"sources": "https://github.com/JMReich/Path_To_Grass/issues"
 	},
 	"license": "CC0-1.0",
 	"icon": "assets/path_to_grass/icon.png",
@@ -26,9 +26,9 @@
 		"path_to_grass.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.15.7",
-		"minecraft": "~1.20.4",
-		"java": ">=17"
+		"fabricloader": ">=0.15.11",
+		"minecraft": "~1.21",
+		"java": ">=21"
 
 	},
 	"suggests": {

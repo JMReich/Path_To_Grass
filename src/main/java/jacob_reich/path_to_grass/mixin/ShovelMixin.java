@@ -5,6 +5,7 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.GrassBlock;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemUsage;
 import net.minecraft.item.ItemUsageContext;
@@ -46,9 +47,26 @@ public class ShovelMixin {
                 world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
                 cir.setReturnValue(ActionResult.SUCCESS);
                 if (player != null) {
-                    context.getStack().damage(1, player, (p) -> {
-                        p.sendToolBreakStatus(context.getHand());
-                    });
+                    context.getStack().damage(1, player, EquipmentSlot.MAINHAND);
+                }
+            }
+        } else if (context.getHand() == Hand.OFF_HAND) {
+            World world = context.getWorld();
+            PlayerEntity player = context.getPlayer();
+
+            BlockPos pos = context.getBlockPos();
+            BlockState blockState = world.getBlockState(pos);
+            Block block = blockState.getBlock();
+
+
+
+
+            if (block == Blocks.DIRT_PATH) {
+                world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+                world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
+                cir.setReturnValue(ActionResult.SUCCESS);
+                if (player != null) {
+                    context.getStack().damage(1, player, EquipmentSlot.OFFHAND);
                 }
             }
         }
