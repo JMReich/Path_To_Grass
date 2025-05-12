@@ -18,6 +18,9 @@ public class PathToGrass implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
+		// Register the block entity type
+		ModBlockEntities.register();
+
 		LOGGER.info("Loading Path To Grass");
 	}
 }
