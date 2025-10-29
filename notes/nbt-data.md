@@ -26,3 +26,8 @@ so, I believe I just need
 and 
 /data get  (need to look into how this command works)
 
+
+Learned that if you are trying to use a TAIL inject, it will only kick off if the vanilla code does not return ActionResult.SUCCESS; To get around this, we can use the RETURN inject instead.
+
+Ran into this issue again when a mixin is setting the return value
+cir.setReturnValue(ActionResult.SUCCESS);

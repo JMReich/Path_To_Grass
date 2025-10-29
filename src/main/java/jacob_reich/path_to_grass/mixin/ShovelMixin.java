@@ -32,59 +32,32 @@ public class ShovelMixin {
     // This section is for retrieving NBT data, checking if the block has had anything changed about it, passing the data or reverting the block and clearing the data
     @Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
     private void useOnPathHead(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
-//        Why did I use this if? it is the same no matter the hand?
-//        System.out.println("I made it to 1");
-        if (context.getHand() == Hand.MAIN_HAND) {
-            World world = context.getWorld();
-            PlayerEntity player = context.getPlayer();
+        World world = context.getWorld();
+        PlayerEntity player = context.getPlayer();
 
-            BlockPos pos = context.getBlockPos();
-            BlockState blockState = world.getBlockState(pos);
-            Block block = blockState.getBlock();
+        BlockPos pos = context.getBlockPos();
+        BlockState blockState = world.getBlockState(pos);
+        Block block = blockState.getBlock();
 
-
-
-//            player.sendMessage(Text.literal("1"), true);
-            if (block == Blocks.DIRT_PATH) {
-
-                world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
-                cir.setReturnValue(ActionResult.SUCCESS);
-                if (player != null) {
-                    context.getStack().damage(1, player, EquipmentSlot.MAINHAND);
-                }
-            }
-        } else if (context.getHand() == Hand.OFF_HAND) {
-            World world = context.getWorld();
-            PlayerEntity player = context.getPlayer();
-
-            BlockPos pos = context.getBlockPos();
-            BlockState blockState = world.getBlockState(pos);
-            Block block = blockState.getBlock();
-
-
-//            player.sendMessage(Text.literal("2"), true);
-
-            if (block == Blocks.DIRT_PATH) {
-                world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
-                world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
-                cir.setReturnValue(ActionResult.SUCCESS);
-                if (player != null) {
-                    context.getStack().damage(1, player, EquipmentSlot.OFFHAND);
-                }
+        if (block == Blocks.DIRT_PATH) {
+            world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
+            world.setBlockState(pos, Blocks.GRASS_BLOCK.getDefaultState());
+            cir.setReturnValue(ActionResult.SUCCESS);
+            if (context.getHand() == Hand.MAIN_HAND) {
+                context.getStack().damage(1, player, EquipmentSlot.MAINHAND);
+            } else {
+                context.getStack().damage(1, player, EquipmentSlot.OFFHAND);
             }
         }
-
     }
 
-
-//    This is only triggering when the shovel is used on the bottom of a block. Not sure what is causing that. Tail is used to tell it to happen at the end of the sequence
-    @Inject(method = "useOnBlock", at = @At("TAIL"), cancellable = false)
+    // This section is for applying NBT data to blocks
+    @Inject(method = "useOnBlock", at = @At("RETURN"), cancellable = false)
     private void useOnPathTail(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
         PlayerEntity player = context.getPlayer();
 
         assert player != null;
-        player.sendMessage(Text.literal("Hello, friend."), true);
+        player.sendMessage(Text.literal("I made it to the end."), true);
         System.out.println("I made it here");
     }
 
