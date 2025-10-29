@@ -28,8 +28,12 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public class ShovelMixin {
 
 
+
+    // This section is for retrieving NBT data, checking if the block has had anything changed about it, passing the data or reverting the block and clearing the data
     @Inject(method = "useOnBlock", at = @At("HEAD"), cancellable = true)
-    private void useOnPath(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
+    private void useOnPathHead(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
+//        Why did I use this if? it is the same no matter the hand?
+//        System.out.println("I made it to 1");
         if (context.getHand() == Hand.MAIN_HAND) {
             World world = context.getWorld();
             PlayerEntity player = context.getPlayer();
@@ -40,7 +44,7 @@ public class ShovelMixin {
 
 
 
-
+//            player.sendMessage(Text.literal("1"), true);
             if (block == Blocks.DIRT_PATH) {
 
                 world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
@@ -59,7 +63,7 @@ public class ShovelMixin {
             Block block = blockState.getBlock();
 
 
-
+//            player.sendMessage(Text.literal("2"), true);
 
             if (block == Blocks.DIRT_PATH) {
                 world.playSound(null, pos, SoundEvents.ITEM_SHOVEL_FLATTEN, SoundCategory.BLOCKS, 1.0F, 1.0F);
@@ -71,7 +75,17 @@ public class ShovelMixin {
             }
         }
 
+    }
 
+
+//    This is only triggering when the shovel is used on the bottom of a block. Not sure what is causing that. Tail is used to tell it to happen at the end of the sequence
+    @Inject(method = "useOnBlock", at = @At("TAIL"), cancellable = false)
+    private void useOnPathTail(ItemUsageContext context, CallbackInfoReturnable<ActionResult> cir) {
+        PlayerEntity player = context.getPlayer();
+
+        assert player != null;
+        player.sendMessage(Text.literal("Hello, friend."), true);
+        System.out.println("I made it here");
     }
 
 }
