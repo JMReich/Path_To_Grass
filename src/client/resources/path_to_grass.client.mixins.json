@@ -1,9 +1,9 @@
 {
 	"required": true,
-	"package": "jacobreich.path_to_grass.mixin",
+	"package": "jacobreich.path_to_grass.client.mixin",
 	"compatibilityLevel": "JAVA_25",
-	"mixins": [
-		"ShovelMixin"
+	"client": [
+		"ExampleClientMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
