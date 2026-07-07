@@ -2,6 +2,11 @@ package jacobreich.path_to_grass.mixin;
 
 import jacobreich.path_to_grass.util.PathBlockData;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.TagParser;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -13,9 +18,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
-import net.minecraft.tags.BlockTags;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -63,7 +65,7 @@ public class ShovelMixin {
                 PathBlockData data = PathBlockData.get(level);
                 String key = getStorageKey(level, pos);
                 String storedState = data.getBlockState(key);
-                BlockState revertState = deserializeBlockState(storedState);
+                BlockState revertState = deserializeBlockState(storedState, level);
                 data.removeBlockState(key);
 
                 level.setBlock(pos, revertState, 3);
@@ -72,17 +74,26 @@ public class ShovelMixin {
             }
         }
         // Convert valid blocks to DIRT_PATH and store original state
-        else if (canConvertToPath(blockState) && !level.isClientSide()) {
+        else if (!level.isClientSide()) {
+            // Tentatively store the original block state before vanilla potentially converts it.
+            // The RETURN injection will clean this up if conversion didn't actually happen.
             PathBlockData data = PathBlockData.get(level);
             String key = getStorageKey(level, pos);
             data.storeBlockState(key, serializeBlockState(blockState));
+        }
+    }
 
-//            BlockState pathState = Blocks.DIRT_PATH.defaultBlockState();
-//            level.setBlock(pos, pathState, 3);
+    @Inject(method = "useOn", at = @At("RETURN"))
+    private void cleanupIfNotConverted(UseOnContext context, CallbackInfoReturnable<InteractionResult> cir) {
+        Level level = context.getLevel();
+        if (level.isClientSide()) return;
 
-//            level.playSound(null, pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1, 1);
-//            context.getItemInHand().hurtAndBreak(1, context.getPlayer(), context.getHand());
-//            cir.setReturnValue(InteractionResult.SUCCESS);
+        BlockPos pos = context.getClickedPos();
+        // If the block at this position is not a dirt path after useOn completes,
+        // the conversion didn't happen — remove the tentatively stored state.
+        if (level.getBlockState(pos).getBlock() != Blocks.DIRT_PATH) {
+            PathBlockData data = PathBlockData.get(level);
+            data.removeBlockState(getStorageKey(level, pos));
         }
     }
 
@@ -90,27 +101,26 @@ public class ShovelMixin {
         return level.dimension().toString() + "_" + pos.getX() + "_" + pos.getY() + "_" + pos.getZ();
     }
 
-    private boolean canConvertToPath(BlockState blockState) {
-        // Check if block is in the dirt tag or is mycelium/podzol/rooted dirt
-        Block block = blockState.getBlock();
-        return blockState.is(BlockTags.DIRT) 
-            || block == Blocks.MYCELIUM
-            || block == Blocks.PODZOL
-            || block == Blocks.ROOTED_DIRT;
-    }
-
     private String serializeBlockState(BlockState state) {
-        Identifier blockId = BuiltInRegistries.BLOCK.getKey(state.getBlock());
-        return blockId.toString();
+        CompoundTag tag = NbtUtils.writeBlockState(state);
+        return tag.toString();
     }
 
-    private BlockState deserializeBlockState(String serialized) {
-       try {
-           Identifier blockId = Identifier.parse(serialized);
-           Block block = BuiltInRegistries.BLOCK.get(blockId).get().value();
-           return block.defaultBlockState();
-       } catch (Exception e) {
-           return Blocks.GRASS_BLOCK.defaultBlockState();
-       }
+    private BlockState deserializeBlockState(String serialized, Level level) {
+        try {
+            HolderGetter<Block> holderGetter = level.registryAccess().lookupOrThrow(Registries.BLOCK);
+            try {
+                // New format: full SNBT block state (e.g. {Name:"mod:block",Properties:{...}})
+                CompoundTag tag = TagParser.parseCompoundFully(serialized);
+                return NbtUtils.readBlockState(holderGetter, tag);
+            } catch (Exception e) {
+                // Old format fallback: plain block ID string (e.g. "mod:block")
+                CompoundTag tag = new CompoundTag();
+                tag.putString("Name", serialized);
+                return NbtUtils.readBlockState(holderGetter, tag);
+            }
+        } catch (Exception e) {
+            return Blocks.GRASS_BLOCK.defaultBlockState();
+        }
     }
 }
