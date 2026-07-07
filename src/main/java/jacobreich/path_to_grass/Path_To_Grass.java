@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.Identifier;
 
-
+import jacobreich.path_to_grass.event.ServerTickHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +23,7 @@ public class Path_To_Grass implements ModInitializer {
 		// Proceed with mild caution.
 
 		LOGGER.info("Loading Path To Grass");
+		ServerTickHandler.register();
 	}
 
 	public static Identifier id(String path) {

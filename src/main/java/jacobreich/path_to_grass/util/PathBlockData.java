@@ -7,55 +7,118 @@ import net.minecraft.world.level.Level;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 public class PathBlockData {
-    private static final String FILE_NAME = "path_to_grass.nbt";
+    private static final String FILE_NAME_TEMPLATE = "path_to_grass_%d.nbt";
     private static final String DEFAULT_BLOCK_STATE = "minecraft:grass_block";
     private static PathBlockData instance;
-    private CompoundTag blockStates;
+    private Map<Long, CompoundTag> chunkData;
+    private Map<Long, Boolean> dirtyChunks;
     private Path worldDataPath;
+    private final Object dataLock = new Object();
 
     private PathBlockData(Path worldPath) {
         this.worldDataPath = worldPath;
-        this.blockStates = new CompoundTag();
-        load();
+        this.chunkData = new HashMap<>();
+        this.dirtyChunks = new HashMap<>();
     }
 
     public void storeBlockState(String key, String blockId) {
-        blockStates.putString(key, blockId);
-        save();
-    }
-
-    public String getBlockState(String key) {
-        return blockStates.getString(key).orElse(DEFAULT_BLOCK_STATE);
-    }
-
-    public void removeBlockState(String key) {
-        blockStates.remove(key);
-        save();
-    }
-
-    public boolean hasBlockState(String key) {
-        return blockStates.contains(key);
-    }
-
-    private void save() {
-        try {
-            if (worldDataPath != null) {
-                File file = worldDataPath.resolve(FILE_NAME).toFile();
-                NbtIo.writeCompressed(blockStates, file.toPath());
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        synchronized (dataLock) {
+            long chunkHash = getChunkHashFromKey(key);
+            CompoundTag chunk = getOrLoadChunk(chunkHash);
+            chunk.putString(key, blockId);
+            dirtyChunks.put(chunkHash, true);
         }
     }
 
-    private void load() {
+    public String getBlockState(String key) {
+        synchronized (dataLock) {
+            long chunkHash = getChunkHashFromKey(key);
+            CompoundTag chunk = getOrLoadChunk(chunkHash);
+            return chunk.getString(key).orElse(DEFAULT_BLOCK_STATE);
+        }
+    }
+
+    public void removeBlockState(String key) {
+        synchronized (dataLock) {
+            long chunkHash = getChunkHashFromKey(key);
+            CompoundTag chunk = getOrLoadChunk(chunkHash);
+            chunk.remove(key);
+            dirtyChunks.put(chunkHash, true);
+        }
+    }
+
+    public boolean hasBlockState(String key) {
+        synchronized (dataLock) {
+            long chunkHash = getChunkHashFromKey(key);
+            CompoundTag chunk = getOrLoadChunk(chunkHash);
+            return chunk.contains(key);
+        }
+    }
+
+    private long getChunkHashFromKey(String key) {
+        // Key format: "dimension_X_Y_Z"
+        String[] parts = key.split("_");
+        if (parts.length >= 4) {
+            try {
+                int x = Integer.parseInt(parts[1]);
+                int z = Integer.parseInt(parts[3]); // Y doesn't matter for chunks
+                int chunkX = x >> 4;
+                int chunkZ = z >> 4;
+                // ChunkPos uses a long encoding: (chunkX & 0xFFFFFFFFL) | ((chunkZ & 0xFFFFFFFFL) << 32)
+                return ((long)chunkX & 0xFFFFFFFFL) | (((long)chunkZ & 0xFFFFFFFFL) << 32);
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
+    private CompoundTag getOrLoadChunk(long chunkHash) {
+        CompoundTag chunk = chunkData.get(chunkHash);
+        if (chunk == null) {
+            chunk = loadChunk(chunkHash);
+            if (chunk == null) {
+                chunk = new CompoundTag();
+            }
+            chunkData.put(chunkHash, chunk);
+        }
+        return chunk;
+    }
+
+    public void savePeriodically() {
+        synchronized (dataLock) {
+            for (Map.Entry<Long, Boolean> entry : dirtyChunks.entrySet()) {
+                if (entry.getValue()) {
+                    saveChunk(entry.getKey());
+                    entry.setValue(false);
+                }
+            }
+        }
+    }
+
+    private void saveChunk(long chunkHash) {
         try {
             if (worldDataPath != null) {
-                File file = worldDataPath.resolve(FILE_NAME).toFile();
-                if (file.exists()) {
-                    blockStates = NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap());
+                CompoundTag chunk = chunkData.get(chunkHash);
+                if (chunk != null) {
+                    Path chunkDir = worldDataPath.resolve("path_to_grass");
+                    File file = chunkDir.resolve(
+                        String.format(FILE_NAME_TEMPLATE, chunkHash)
+                    ).toFile();
+                    
+                    if (chunk.size() > 0) {
+                        java.nio.file.Files.createDirectories(chunkDir);
+                        NbtIo.writeCompressed(chunk, file.toPath());
+                    } else {
+                        // Delete empty chunk file
+                        if (file.exists()) {
+                            file.delete();
+                        }
+                    }
                 }
             }
         } catch (IOException e) {
@@ -63,10 +126,27 @@ public class PathBlockData {
         }
     }
 
+    private CompoundTag loadChunk(long chunkHash) {
+        try {
+            if (worldDataPath != null) {
+                Path chunkDir = worldDataPath.resolve("path_to_grass");
+                File file = chunkDir.resolve(
+                    String.format(FILE_NAME_TEMPLATE, chunkHash)
+                ).toFile();
+                if (file.exists()) {
+                    return NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap());
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static PathBlockData get(Level level) {
         if (level.getServer() != null) {
             Path worldPath = level.getServer().getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT);
-            if (instance == null || !instance.worldDataPath.equals(worldPath)) {
+            if (instance == null) {
                 instance = new PathBlockData(worldPath);
             }
         }
