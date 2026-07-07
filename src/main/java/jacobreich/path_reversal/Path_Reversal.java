@@ -1,15 +1,15 @@
-package jacobreich.path_to_grass;
+package jacobreich.path_reversal;
 
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.Identifier;
 
-import jacobreich.path_to_grass.event.ServerTickHandler;
+import jacobreich.path_reversal.event.ServerTickHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Path_To_Grass implements ModInitializer {
-	public static final String MOD_ID = "path_to_grass";
+public class Path_Reversal implements ModInitializer {
+	public static final String MOD_ID = "path_reversal";
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.

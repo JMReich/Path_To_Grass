@@ -1,6 +1,6 @@
-package jacobreich.path_to_grass.mixin;
+package jacobreich.path_reversal.mixin;
 
-import jacobreich.path_to_grass.util.PathBlockData;
+import jacobreich.path_reversal.util.PathBlockData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;

@@ -1,4 +1,4 @@
-package jacobreich.path_to_grass.client.mixin;
+package jacobreich.path_reversal.client.mixin;
 
 import net.minecraft.client.Minecraft;
 import org.spongepowered.asm.mixin.Mixin;

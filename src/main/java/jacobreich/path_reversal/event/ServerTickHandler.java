@@ -1,6 +1,6 @@
-package jacobreich.path_to_grass.event;
+package jacobreich.path_reversal.event;
 
-import jacobreich.path_to_grass.util.PathBlockData;
+import jacobreich.path_reversal.util.PathBlockData;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.server.MinecraftServer;

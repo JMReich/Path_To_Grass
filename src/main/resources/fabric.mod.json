@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "path_to_grass",
+	"id": "path_reversal",
 	"version": "${version}",
-	"name": "Path_To_Grass",
+	"name": "Path Reversal",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
 		"Me!"
@@ -12,23 +12,20 @@
 		"sources": "https://github.com/FabricMC/fabric-example-mod"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/path_to_grass/icon.png",
+	"icon": "assets/path_reversal/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"jacobreich.path_to_grass.Path_To_Grass"
+			"jacobreich.path_reversal.Path_Reversal"
 		],
 		"client": [
-			"jacobreich.path_to_grass.client.Path_To_GrassClient"
-		],
-		"fabric-datagen": [
-			"jacobreich.path_to_grass.client.Path_To_GrassDataGenerator"
+			"jacobreich.path_reversal.client.Path_Reversal"
 		]
 	},
 	"mixins": [
-		"path_to_grass.mixins.json",
+		"path_reversal.mixins.json",
 		{
-			"config": "path_to_grass.client.mixins.json",
+			"config": "path_reversal.client.mixins.json",
 			"environment": "client"
 		}
 	],

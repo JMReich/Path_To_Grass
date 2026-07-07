@@ -1,9 +1,10 @@
 {
 	"required": true,
-	"package": "jacobreich.path_to_grass.client.mixin",
+	"package": "jacobreich.path_reversal.mixin",
 	"compatibilityLevel": "JAVA_25",
-	"client": [
-		"ExampleClientMixin"
+	"mixins": [
+		"DirtPathBlockMixin",
+		"ShovelMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

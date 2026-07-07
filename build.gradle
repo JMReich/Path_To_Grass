@@ -18,7 +18,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"path_to_grass" {
+		"path_reversal" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

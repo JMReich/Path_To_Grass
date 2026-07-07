@@ -1,4 +1,4 @@
-package jacobreich.path_to_grass.util;
+package jacobreich.path_reversal.util;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class PathBlockData {
-    private static final String FILE_NAME_TEMPLATE = "path_to_grass_%d.nbt";
+    private static final String FILE_NAME_TEMPLATE = "path_reversal%d.nbt";
     private static final String DEFAULT_BLOCK_STATE = "minecraft:grass_block";
     private static PathBlockData instance;
     private Map<Long, CompoundTag> chunkData;
@@ -65,21 +65,28 @@ public class PathBlockData {
     }
 
     private long getChunkHashFromKey(String key) {
-        // Key format: "dimension_X_Y_Z"
+        // Key format: "dimension_X_Y_Z" where dimension may itself contain underscores
+        // Parse X, Y, Z from the end to avoid being tripped up by dimension names like "the_nether"
         String[] parts = key.split("_");
         if (parts.length >= 4) {
             try {
-                int x = Integer.parseInt(parts[1]);
-                int z = Integer.parseInt(parts[3]); // Y doesn't matter for chunks
+                int z = Integer.parseInt(parts[parts.length - 1]);
+                // parts[parts.length - 2] is Y (ignored for chunk lookup)
+                int x = Integer.parseInt(parts[parts.length - 3]);
                 int chunkX = x >> 4;
                 int chunkZ = z >> 4;
-                // ChunkPos uses a long encoding: (chunkX & 0xFFFFFFFFL) | ((chunkZ & 0xFFFFFFFFL) << 32)
-                return ((long)chunkX & 0xFFFFFFFFL) | (((long)chunkZ & 0xFFFFFFFFL) << 32);
+
+                // Include a dimension component so overworld and nether chunks don't share files
+                String dimension = String.join("_", java.util.Arrays.copyOfRange(parts, 0, parts.length - 3));
+                long dimComponent = (long) dimension.hashCode() << 48;
+
+                long coordHash = ((long) chunkX & 0xFFFFFFFFL) | (((long) chunkZ & 0xFFFFFFFFL) << 32);
+                return coordHash ^ dimComponent;
             } catch (NumberFormatException e) {
-                return 0;
+                return (long) key.hashCode();
             }
         }
-        return 0;
+        return (long) key.hashCode();
     }
 
     private CompoundTag getOrLoadChunk(long chunkHash) {
@@ -110,7 +117,7 @@ public class PathBlockData {
             if (worldDataPath != null) {
                 CompoundTag chunk = chunkData.get(chunkHash);
                 if (chunk != null) {
-                    Path chunkDir = worldDataPath.resolve("path_to_grass");
+                    Path chunkDir = worldDataPath.resolve("path_reversal");
                     File file = chunkDir.resolve(
                         String.format(FILE_NAME_TEMPLATE, chunkHash)
                     ).toFile();
@@ -134,7 +141,7 @@ public class PathBlockData {
     private CompoundTag loadChunk(long chunkHash) {
         try {
             if (worldDataPath != null) {
-                Path chunkDir = worldDataPath.resolve("path_to_grass");
+                Path chunkDir = worldDataPath.resolve("path_reversal");
                 File file = chunkDir.resolve(
                     String.format(FILE_NAME_TEMPLATE, chunkHash)
                 ).toFile();
