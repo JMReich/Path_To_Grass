@@ -3,9 +3,9 @@
 	"id": "path_reversal",
 	"version": "${version}",
 	"name": "Path Reversal",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "This mod lets you turn a path block back into it's previous block state (podzol -> path block -> podzol) by right clicking it with a shovel.",
 	"authors": [
-		"Me!"
+		"Jacob Reich"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
