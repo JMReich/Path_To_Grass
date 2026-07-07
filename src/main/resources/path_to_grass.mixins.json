@@ -3,6 +3,7 @@
 	"package": "jacobreich.path_to_grass.mixin",
 	"compatibilityLevel": "JAVA_25",
 	"mixins": [
+		"DirtPathBlockMixin",
 		"ShovelMixin"
 	],
 	"injectors": {

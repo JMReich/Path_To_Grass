@@ -98,7 +98,7 @@ public class ShovelMixin {
     }
 
     private String getStorageKey(Level level, BlockPos pos) {
-        return level.dimension().toString() + "_" + pos.getX() + "_" + pos.getY() + "_" + pos.getZ();
+        return PathBlockData.getStorageKey(level, pos);
     }
 
     private String serializeBlockState(BlockState state) {

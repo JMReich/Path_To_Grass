@@ -3,6 +3,7 @@ package jacobreich.path_to_grass.util;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.nbt.NbtAccounter;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +24,10 @@ public class PathBlockData {
         this.worldDataPath = worldPath;
         this.chunkData = new HashMap<>();
         this.dirtyChunks = new HashMap<>();
+    }
+
+    public static String getStorageKey(Level level, BlockPos pos) {
+        return level.dimension().toString() + "_" + pos.getX() + "_" + pos.getY() + "_" + pos.getZ();
     }
 
     public void storeBlockState(String key, String blockId) {
