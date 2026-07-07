@@ -55,10 +55,8 @@ public class ShovelMixin {
 
         // Revert DIRT_PATH back to original block or grass block
         if (block == Blocks.DIRT_PATH) {
-            if(level.isClientSide()){
-                player.swing(context.getHand());
-            }
             if(!level.isClientSide()) {
+                player.swing(context.getHand(), true);
                 level.playSound(null, pos, SoundEvents.SHOVEL_FLATTEN, SoundSource.BLOCKS, 1, 1);
 
 
