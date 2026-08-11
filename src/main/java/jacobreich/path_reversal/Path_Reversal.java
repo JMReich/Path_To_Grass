@@ -2,7 +2,7 @@ package jacobreich.path_reversal;
 
 import net.fabricmc.api.ModInitializer;
 
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import jacobreich.path_reversal.event.ServerTickHandler;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class Path_Reversal implements ModInitializer {
 		ServerTickHandler.register();
 	}
 
-	public static Identifier id(String path) {
-		return Identifier.fromNamespaceAndPath(MOD_ID, path);
+	public static ResourceLocation id(String path) {
+		return new ResourceLocation(MOD_ID, path);
 	}
 }

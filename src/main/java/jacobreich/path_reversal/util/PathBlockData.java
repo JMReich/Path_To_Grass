@@ -2,7 +2,6 @@ package jacobreich.path_reversal.util;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import java.io.File;
@@ -43,7 +42,7 @@ public class PathBlockData {
         synchronized (dataLock) {
             long chunkHash = getChunkHashFromKey(key);
             CompoundTag chunk = getOrLoadChunk(chunkHash);
-            return chunk.getString(key).orElse(DEFAULT_BLOCK_STATE);
+            return chunk.contains(key) ? chunk.getString(key) : DEFAULT_BLOCK_STATE;
         }
     }
 
@@ -124,7 +123,7 @@ public class PathBlockData {
                     
                     if (chunk.size() > 0) {
                         java.nio.file.Files.createDirectories(chunkDir);
-                        NbtIo.writeCompressed(chunk, file.toPath());
+                        NbtIo.writeCompressed(chunk, file);
                     } else {
                         // Delete empty chunk file
                         if (file.exists()) {
@@ -146,7 +145,7 @@ public class PathBlockData {
                     String.format(FILE_NAME_TEMPLATE, chunkHash)
                 ).toFile();
                 if (file.exists()) {
-                    return NbtIo.readCompressed(file.toPath(), NbtAccounter.unlimitedHeap());
+                    return NbtIo.readCompressed(file);
                 }
             }
         } catch (IOException e) {

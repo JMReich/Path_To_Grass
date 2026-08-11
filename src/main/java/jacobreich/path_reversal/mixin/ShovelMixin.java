@@ -67,7 +67,7 @@ public class ShovelMixin {
                 data.removeBlockState(key);
 
                 level.setBlock(pos, revertState, 3);
-                context.getItemInHand().hurtAndBreak(1, context.getPlayer(), context.getHand());
+                context.getItemInHand().hurtAndBreak(1, context.getPlayer(), p -> p.broadcastBreakEvent(context.getHand()));
                 cir.setReturnValue(InteractionResult.SUCCESS);
             }
         }
@@ -106,10 +106,10 @@ public class ShovelMixin {
 
     private BlockState deserializeBlockState(String serialized, Level level) {
         try {
-            HolderGetter<Block> holderGetter = level.registryAccess().lookupOrThrow(Registries.BLOCK);
+            HolderGetter<Block> holderGetter = level.registryAccess().registryOrThrow(Registries.BLOCK).asLookup();
             try {
                 // New format: full SNBT block state (e.g. {Name:"mod:block",Properties:{...}})
-                CompoundTag tag = TagParser.parseCompoundFully(serialized);
+                CompoundTag tag = (CompoundTag) TagParser.parseTag(serialized);
                 return NbtUtils.readBlockState(holderGetter, tag);
             } catch (Exception e) {
                 // Old format fallback: plain block ID string (e.g. "mod:block")
