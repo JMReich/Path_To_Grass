@@ -1,7 +1,7 @@
 {
 	"required": true,
 	"package": "jacobreich.path_reversal.mixin",
-	"compatibilityLevel": "JAVA_17",
+	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"DirtPathBlockMixin",
 		"ShovelMixin"
